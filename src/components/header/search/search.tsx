@@ -1,12 +1,29 @@
-import { Component } from "react";
+import { Component, type ChangeEvent } from "react";
 import "./search.css";
 
-class Search extends Component {
+type Props = {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+};
+
+class Search extends Component<Props> {
+  handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    this.props.onChange(e.target.value);
+  };
+
   render() {
+    const { value } = this.props;
     return (
       <div className="search">
         <span className="search-icon">🔍</span>
-        <input className="search-input" type="text" placeholder="Search..." />
+        <input
+          className="search-input"
+          type="text"
+          placeholder="Search..."
+          value={value}
+          onChange={this.handleChange}
+        />
       </div>
     );
   }
