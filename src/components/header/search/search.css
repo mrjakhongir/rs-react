@@ -2,10 +2,11 @@
   position: relative;
   background: white;
   border-radius: 5px;
+  padding: 1px;
   padding-left: 2.4rem;
 }
 
-.search-icon {
+.search__icon {
   position: absolute;
   left: 0.8rem;
   top: 50%;
@@ -13,10 +14,20 @@
   font-size: 1.6rem;
 }
 
-.search-input {
+.search__input {
   padding: 0.8rem;
   font-size: 1.6rem;
   border: none;
   border-radius: 5px;
   outline: none;
+}
+
+.search__btn {
+  padding: 0.8rem 1.6rem;
+  font-size: 1.6rem;
+  border: none;
+  border-radius: 5px;
+  background: goldenrod;
+  color: white;
+  cursor: pointer;
 }
