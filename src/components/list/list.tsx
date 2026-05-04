@@ -20,13 +20,21 @@ class List extends Component<Props, State> {
     error: null,
   };
 
+  private didHydrate = false;
+
   componentDidMount() {
-    this.loadData();
+    this.didHydrate = true;
+
+    if (this.props.value) {
+      this.loadData();
+    }
   }
 
   componentDidUpdate(prevProps: Props) {
     if (prevProps.value !== this.props.value) {
-      this.loadData();
+      if (this.didHydrate) {
+        this.loadData();
+      }
     }
   }
 
@@ -53,6 +61,7 @@ class List extends Component<Props, State> {
   render() {
     const { data, loading, error } = this.state;
 
+    console.log(this.props);
     return (
       <main>
         {loading && <p className="loader"></p>}
