@@ -1,20 +1,83 @@
 import { Component } from "react";
 import Container from "../ui/container";
+import { fetchPokemon, type PokemonCard } from "./api";
 import "./list.css";
 
-class List extends Component {
+type Props = {
+  value: string;
+};
+
+type State = {
+  data: PokemonCard[];
+  loading: boolean;
+  error: string | null;
+};
+
+class List extends Component<Props, State> {
+  state: State = {
+    data: [],
+    loading: false,
+    error: null,
+  };
+
+  componentDidMount() {
+    this.loadData();
+  }
+
+  componentDidUpdate(prevProps: Props) {
+    if (prevProps.value !== this.props.value) {
+      this.loadData();
+    }
+  }
+
+  loadData = async () => {
+    const { value } = this.props;
+
+    this.setState({ loading: true, error: null });
+
+    try {
+      const data = await fetchPokemon(value);
+
+      this.setState({
+        data,
+        loading: false,
+      });
+    } catch (e) {
+      this.setState({
+        loading: false,
+        error: e instanceof Error ? e.message : "Something went wrong",
+      });
+    }
+  };
+
   render() {
+    const { data, loading, error } = this.state;
+
     return (
-      <main className="list">
+      <main>
+        {loading && <p className="loader"></p>}
+
+        {!loading && error && <p>{error}</p>}
+
+        {!loading && !error && data.length === 0 && (
+          <div className="not-found">
+            <span>!</span>
+            <p>No Pokémon found! Try another one</p>
+          </div>
+        )}
         <Container>
-          <div className="card">
-            <img
-              className="card__img"
-              src="data:image/jpeg;base64,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"
-              alt="Pokemon"
-            />
-            <h3 className="card__title">Title</h3>
-            <p className="card__description">Description</p>
+          <div className="list">
+            {data.map((p) => (
+              <div key={p.id} className="card">
+                <img className="card__img" src={p.image} alt={p.name} />
+
+                <h3 className="card__title">{p.name}</h3>
+
+                <p className="card__description">
+                  Height: {p.height} • Weight: {p.weight}
+                </p>
+              </div>
+            ))}
           </div>
         </Container>
       </main>

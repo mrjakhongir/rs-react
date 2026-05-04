@@ -4,7 +4,6 @@ import "./search.css";
 type Props = {
   value: string;
   onChange: (value: string) => void;
-  placeholder?: string;
 };
 
 class Search extends Component<Props> {
