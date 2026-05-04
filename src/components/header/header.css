@@ -1,0 +1,16 @@
+.header {
+  padding: 2rem 0;
+  background: goldenrod;
+}
+
+.header__inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 2.4rem;
+  font-weight: bold;
+  color: white;
+}
