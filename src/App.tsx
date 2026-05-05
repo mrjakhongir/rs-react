@@ -7,6 +7,7 @@ class App extends Component {
   state = {
     input: "",
     search: "",
+    ready: false,
   };
 
   componentDidMount() {
@@ -16,7 +17,10 @@ class App extends Component {
       this.setState({
         input: saved,
         search: saved,
+        ready: true,
       });
+    } else {
+      this.setState({ ready: true });
     }
   }
 
@@ -32,6 +36,8 @@ class App extends Component {
   };
 
   render() {
+    if (!this.state.ready) return null;
+
     return (
       <div className="app">
         <Header
