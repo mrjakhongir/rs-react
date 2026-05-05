@@ -1,0 +1,29 @@
+.error-boundary {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 0, 0, 0.1);
+}
+
+.error-boundary__title {
+  font-size: 3.2rem;
+  color: #d32f2f;
+  margin-bottom: 10px;
+}
+
+.error-boundary__message {
+  font-size: 1.6rem;
+  margin-bottom: 20px;
+}
+
+.error-boundary__reset-button {
+  padding: 10px 20px;
+  font-size: 1.6rem;
+  background: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}

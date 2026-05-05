@@ -1,4 +1,5 @@
 import { Component } from "react";
+import ErrorTestButton from "./components/error-boundary/error-test-button";
 import Header from "./components/header/header";
 import List from "./components/list/list";
 
@@ -40,6 +41,8 @@ class App extends Component {
         />
 
         <List value={this.state.search} />
+
+        <ErrorTestButton />
       </div>
     );
   }
