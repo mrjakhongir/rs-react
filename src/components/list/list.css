@@ -76,3 +76,11 @@ main {
   color: #888;
   margin-top: 10rem;
 }
+
+
+.error-message {
+  text-align: center;
+  font-size: 2rem;
+  color: red;
+  margin-top: 10rem;
+}

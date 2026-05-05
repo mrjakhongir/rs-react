@@ -57,7 +57,7 @@ class List extends Component<Props, State> {
       <main>
         {loading && <p className="loader"></p>}
 
-        {!loading && error && <p>{error}</p>}
+        {!loading && error && <p className="error-message">{error}</p>}
 
         {!loading && !error && data.length === 0 && (
           <div className="not-found">
