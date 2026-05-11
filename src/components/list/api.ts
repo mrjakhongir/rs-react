@@ -1,5 +1,10 @@
 const BASE_URL = "https://pokeapi.co/api/v2";
 
+export type ApiError = {
+  status: number;
+  message: string;
+};
+
 export type PokemonCard = {
   id: number;
   name: string;
@@ -21,7 +26,12 @@ export async function fetchPokemon(query?: string): Promise<PokemonCard[]> {
   if (query) {
     const res = await fetch(`${BASE_URL}/pokemon/${query.toLowerCase()}`);
 
-    if (!res.ok) return [];
+    if (!res.ok) {
+      throw {
+        status: res.status,
+        message: "Failed to fetch pokemon",
+      } as ApiError;
+    }
 
     const data = await res.json();
 
@@ -39,7 +49,10 @@ export async function fetchPokemon(query?: string): Promise<PokemonCard[]> {
   const res = await fetch(`${BASE_URL}/pokemon?limit=20`);
 
   if (!res.ok) {
-    throw new Error("Failed to fetch pokemon");
+    throw {
+      status: res.status,
+      message: "Failed to fetch pokemon",
+    } as ApiError;
   }
 
   const list: PokemonListResponse = await res.json();

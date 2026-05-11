@@ -1,60 +1,134 @@
-import { screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import App from "./App";
 import { renderWithProviders } from "./__tests__/test-utils";
+import * as api from "./components/list/api";
 
-describe("App", () => {
+vi.mock("./components/list/mock-data");
+
+describe("App Search + LocalStorage behavior", () => {
   beforeEach(() => {
     localStorage.clear();
     vi.restoreAllMocks();
   });
 
+  // 2️⃣ Retrieves saved search term on mount
   test("displays previously saved search term from localStorage on mount", async () => {
     vi.spyOn(Storage.prototype, "getItem").mockReturnValue("pikachu");
 
     renderWithProviders(<App />);
 
     const input = await screen.findByPlaceholderText(/search/i);
-
     expect(input).toHaveValue("pikachu");
   });
 
+  // 3️⃣ Shows empty input when no saved term exists
   test("shows empty input when no saved term exists", async () => {
     vi.spyOn(Storage.prototype, "getItem").mockReturnValue(null);
 
     renderWithProviders(<App />);
 
     const input = await screen.findByPlaceholderText(/search/i);
-
     expect(input).toHaveValue("");
   });
 
+  // 4️⃣ Updates input value when user types
+  test("updates input value when user types", async () => {
+    renderWithProviders(<App />);
+    const user = userEvent.setup();
+
+    const input = await screen.findByPlaceholderText(/search/i);
+    await user.type(input, "bulbasaur");
+
+    expect(input).toHaveValue("bulbasaur");
+  });
+
+  // 5️⃣ Saves search term to localStorage when search button is clicked
   test("saves search term to localStorage when search button is clicked", async () => {
     const setItemSpy = vi.spyOn(Storage.prototype, "setItem");
 
     renderWithProviders(<App />);
+    const user = userEvent.setup();
 
     const input = await screen.findByPlaceholderText(/search/i);
     const button = await screen.findByRole("button", { name: /search/i });
 
-    await userEvent.type(input, "bulbasaur");
-    await userEvent.click(button);
+    await user.type(input, "charmander");
+    await user.click(button);
 
-    expect(setItemSpy).toHaveBeenCalledWith("search_term", "bulbasaur");
+    expect(setItemSpy).toHaveBeenCalledWith("search_term", "charmander");
   });
 
-  test("trims whitespace before saving to localStorage", async () => {
+  // 6️⃣ Trims whitespace before saving
+  test("trims whitespace from search input before saving", async () => {
     const setItemSpy = vi.spyOn(Storage.prototype, "setItem");
 
     renderWithProviders(<App />);
+    const user = userEvent.setup();
 
     const input = await screen.findByPlaceholderText(/search/i);
     const button = await screen.findByRole("button", { name: /search/i });
 
-    await userEvent.type(input, "   mew   ");
-    await userEvent.click(button);
+    await user.type(input, "   mewtwo   ");
+    await user.click(button);
 
-    expect(setItemSpy).toHaveBeenCalledWith("search_term", "mew");
+    expect(setItemSpy).toHaveBeenCalledWith("search_term", "mewtwo");
+  });
+
+  // 7️⃣ Overwrites existing localStorage value when new search is performed
+  test("overwrites existing localStorage value when new search is performed", async () => {
+    const setItemSpy = vi.spyOn(Storage.prototype, "setItem");
+
+    renderWithProviders(<App />);
+    const user = userEvent.setup();
+
+    const input = await screen.findByPlaceholderText(/search/i);
+    const button = await screen.findByRole("button", { name: /search/i });
+
+    await user.type(input, "pikachu");
+    await user.click(button);
+
+    await user.clear(input);
+    await user.type(input, "snorlax");
+    await user.click(button);
+
+    expect(setItemSpy).toHaveBeenLastCalledWith("search_term", "snorlax");
+  });
+
+  test("makes initial API call on mount", async () => {
+    const spy = vi.spyOn(api, "fetchPokemon").mockResolvedValue([]);
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(spy).toHaveBeenCalledWith("");
+    });
+  });
+
+  test("uses search term from localStorage on initial load", async () => {
+    vi.spyOn(Storage.prototype, "getItem").mockReturnValue("pikachu");
+
+    const spy = vi.spyOn(api, "fetchPokemon").mockResolvedValue([]);
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(spy).toHaveBeenCalledWith("pikachu");
+    });
+  });
+
+  test("shows loading state during API call", async () => {
+    vi.spyOn(api, "fetchPokemon").mockImplementation(
+      () => new Promise(() => {}), // never resolves
+    );
+
+    render(<App />);
+
+    const loader = await screen.findByRole("status", {
+      hidden: true,
+    });
+
+    expect(loader).toBeInTheDocument();
   });
 });

@@ -1,7 +1,10 @@
 import { Component } from "react";
 import Container from "../ui/container";
 import { fetchPokemon, type PokemonCard } from "./api";
+import Card from "./card/card";
 import "./list.css";
+import Loading from "./loading/loading";
+import NetworkError from "./network-error/network-error";
 
 type Props = {
   value: string;
@@ -10,7 +13,10 @@ type Props = {
 type State = {
   data: PokemonCard[];
   loading: boolean;
-  error: string | null;
+  error: {
+    status?: number;
+    message: string;
+  } | null;
 };
 
 class List extends Component<Props, State> {
@@ -33,7 +39,7 @@ class List extends Component<Props, State> {
   loadData = async () => {
     const { value } = this.props;
 
-    this.setState({ loading: true, error: null });
+    this.setState({ loading: true, error: null, data: [] });
 
     try {
       const data = await fetchPokemon(value);
@@ -43,9 +49,14 @@ class List extends Component<Props, State> {
         loading: false,
       });
     } catch (e) {
+      const err = e as { status?: number; message?: string };
+
       this.setState({
         loading: false,
-        error: e instanceof Error ? e.message : "Something went wrong",
+        error: {
+          status: err.status,
+          message: err.message || "",
+        },
       });
     }
   };
@@ -55,28 +66,14 @@ class List extends Component<Props, State> {
 
     return (
       <main>
-        {loading && <p className="loader"></p>}
+        {loading && <Loading loading={loading} />}
 
-        {!loading && error && <p className="error-message">{error}</p>}
+        {!loading && <NetworkError error={error} />}
 
-        {!loading && !error && data.length === 0 && (
-          <div className="not-found">
-            <span>!</span>
-            <p>No Pokémon found! Try another one</p>
-          </div>
-        )}
         <Container>
           <div className="list">
             {data.map((p) => (
-              <div key={p.id} className="card">
-                <img className="card__img" src={p.image} alt={p.name} />
-
-                <h3 className="card__title">{p.name}</h3>
-
-                <p className="card__description">
-                  Height: {p.height} • Weight: {p.weight}
-                </p>
-              </div>
+              <Card key={p.id} pokemon={p} />
             ))}
           </div>
         </Container>
