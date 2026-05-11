@@ -9,8 +9,7 @@ const Loading: React.FC<Props> = ({ loading }) => {
 
   return (
     <div className="loader" role="status" aria-label="loading">
-      <div className="loader"></div>
-      Loading...
+      <p>Loading...</p>
     </div>
   );
 };
