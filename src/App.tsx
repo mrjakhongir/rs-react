@@ -1,57 +1,49 @@
-import { Component } from "react";
+import { useState } from "react";
 import ErrorTestButton from "./components/error-boundary/error-test-button";
 import Header from "./components/header/header";
 import List from "./components/list/list";
 
-class App extends Component {
-  state = {
-    input: "",
-    search: "",
-    ready: false,
-  };
+type AppState = {
+  input: string;
+  search: string;
+};
 
-  componentDidMount() {
+const App = () => {
+  const [appState, setAppState] = useState<AppState>(() => {
     const saved = localStorage.getItem("search_term");
+    return saved ? { input: saved, search: saved } : { input: "", search: "" };
+  });
 
-    if (saved) {
-      this.setState({
-        input: saved,
-        search: saved,
-        ready: true,
-      });
-    } else {
-      this.setState({ ready: true });
-    }
-  }
-
-  handleChange = (value: string) => {
-    this.setState({ input: value });
+  const handleChange = (value: string) => {
+    setAppState((prevState) => ({
+      ...prevState,
+      input: value,
+    }));
   };
 
-  handleSearch = () => {
-    const trimmed = this.state.input.trim();
-    if (trimmed === this.state.search) return;
+  const handleSearch = () => {
+    const trimmed = appState.input.trim();
+    if (trimmed === appState.search) return;
     localStorage.setItem("search_term", trimmed);
-    this.setState({ search: trimmed });
+    setAppState((prevState) => ({
+      ...prevState,
+      search: trimmed,
+    }));
   };
 
-  render() {
-    if (!this.state.ready) return null;
+  return (
+    <div className="app">
+      <Header
+        value={appState.input}
+        onChange={handleChange}
+        onSearch={handleSearch}
+      />
 
-    return (
-      <div className="app">
-        <Header
-          value={this.state.input}
-          onChange={this.handleChange}
-          onSearch={this.handleSearch}
-        />
+      <List value={appState.search} />
 
-        <List value={this.state.search} />
-
-        <ErrorTestButton />
-      </div>
-    );
-  }
-}
+      <ErrorTestButton />
+    </div>
+  );
+};
 
 export default App;

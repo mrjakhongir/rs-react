@@ -1,4 +1,4 @@
-import { Component } from "react";
+import { useEffect, useState } from "react";
 import Container from "../ui/container";
 import { fetchPokemon, type PokemonCard } from "./api";
 import Card from "./card/card";
@@ -19,67 +19,57 @@ type State = {
   } | null;
 };
 
-class List extends Component<Props, State> {
-  state: State = {
+const List: React.FC<Props> = ({ value }) => {
+  const [state, setState] = useState<State>({
     data: [],
     loading: false,
     error: null,
-  };
+  });
 
-  componentDidMount() {
-    this.loadData();
-  }
+  useEffect(() => {
+    const loadData = async () => {
+      setState({ loading: true, error: null, data: [] });
 
-  componentDidUpdate(prevProps: Props) {
-    if (prevProps.value !== this.props.value) {
-      this.loadData();
-    }
-  }
+      try {
+        const data = await fetchPokemon(value);
 
-  loadData = async () => {
-    const { value } = this.props;
+        setState((prevState) => ({
+          ...prevState,
+          data,
+          loading: false,
+        }));
+      } catch (e) {
+        const err = e as { status?: number; message?: string };
 
-    this.setState({ loading: true, error: null, data: [] });
+        setState({
+          data: [],
+          loading: false,
+          error: {
+            status: err.status,
+            message: err.message || "",
+          },
+        });
+      }
+    };
 
-    try {
-      const data = await fetchPokemon(value);
+    loadData();
+  }, [value]);
 
-      this.setState({
-        data,
-        loading: false,
-      });
-    } catch (e) {
-      const err = e as { status?: number; message?: string };
+  return (
+    <main>
+      {state.loading && <Loading loading={state.loading} />}
 
-      this.setState({
-        loading: false,
-        error: {
-          status: err.status,
-          message: err.message || "",
-        },
-      });
-    }
-  };
+      {!state.loading && <NetworkError error={state.error} />}
 
-  render() {
-    const { data, loading, error } = this.state;
-
-    return (
-      <main>
-        {loading && <Loading loading={loading} />}
-
-        {!loading && <NetworkError error={error} />}
-
-        <Container>
-          <div className="list">
-            {data.map((p) => (
-              <Card key={p.id} pokemon={p} />
-            ))}
-          </div>
-        </Container>
-      </main>
-    );
-  }
-}
+      <Container>
+        <div className="list">
+          {state.data.map((p) => (
+            <Card key={p.id} pokemon={p} />
+          ))}
+        </div>
+      </Container>
+    </main>
+  );
+};
 
 export default List;

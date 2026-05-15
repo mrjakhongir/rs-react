@@ -8,7 +8,6 @@ type Props = {
 };
 
 const NetworkError: React.FC<Props> = ({ error }) => {
-  console.log(error);
   if (!error) return null;
 
   const getMessage = () => {
