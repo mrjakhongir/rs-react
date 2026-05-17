@@ -77,11 +77,13 @@ const List: React.FC<Props> = ({ value }) => {
         ))}
       </div>
 
-      <Pagination
-        currentPage={+currentPage}
-        totalPages={state.totalPages}
-        onPageChange={handlePageChange}
-      />
+      {!state.loading && (
+        <Pagination
+          currentPage={+currentPage}
+          totalPages={state.totalPages}
+          onPageChange={handlePageChange}
+        />
+      )}
     </section>
   );
 };
