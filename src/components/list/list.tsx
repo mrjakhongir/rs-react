@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import Container from "../ui/container";
-import { fetchPokemon, type PokemonCard } from "./api";
+import { useSearchParams } from "react-router-dom";
+import Pagination from "../pagination/pagination";
+import { fetchPokemonList, type ApiError, type PokemonListCard } from "./api";
 import Card from "./card/card";
 import "./list.css";
 import Loading from "./loading/loading";
@@ -11,39 +12,48 @@ type Props = {
 };
 
 type State = {
-  data: PokemonCard[];
+  data: PokemonListCard[];
   loading: boolean;
+  totalPages: number;
   error: {
     status?: number;
     message: string;
   } | null;
 };
 
+const initialState = {
+  data: [],
+  loading: false,
+  totalPages: 1,
+  error: null,
+};
+
 const List: React.FC<Props> = ({ value }) => {
-  const [state, setState] = useState<State>({
-    data: [],
-    loading: false,
-    error: null,
-  });
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentPage = searchParams.get("page") || "1";
+  const [state, setState] = useState<State>(initialState);
 
   useEffect(() => {
     const loadData = async () => {
-      setState({ loading: true, error: null, data: [] });
+      setState((s) => ({ ...s, loading: true, error: null }));
 
       try {
-        const data = await fetchPokemon(value);
+        const result = await fetchPokemonList({
+          page: currentPage ? +currentPage : 1,
+          query: value,
+        });
 
-        setState((prevState) => ({
-          ...prevState,
-          data,
+        setState((prev) => ({
+          ...prev,
+          data: result?.data,
+          totalPages: result?.totalPages,
           loading: false,
         }));
       } catch (e) {
-        const err = e as { status?: number; message?: string };
+        const err = e as ApiError;
 
         setState({
-          data: [],
-          loading: false,
+          ...initialState,
           error: {
             status: err.status,
             message: err.message || "",
@@ -53,22 +63,30 @@ const List: React.FC<Props> = ({ value }) => {
     };
 
     loadData();
-  }, [value]);
+  }, [value, currentPage]);
+
+  const handlePageChange = (page: number) => {
+    if (currentPage && page === +currentPage) return;
+    setSearchParams({ page: page.toString() });
+  };
 
   return (
-    <main>
+    <section className="list-container">
       {state.loading && <Loading loading={state.loading} />}
-
       {!state.loading && <NetworkError error={state.error} />}
 
-      <Container>
-        <div className="list">
-          {state.data.map((p) => (
-            <Card key={p.id} pokemon={p} />
-          ))}
-        </div>
-      </Container>
-    </main>
+      <Pagination
+        currentPage={+currentPage}
+        totalPages={state.totalPages}
+        onPageChange={handlePageChange}
+      />
+
+      <div className="list">
+        {state.data?.map((p) => (
+          <Card key={p.name} pokemon={p} />
+        ))}
+      </div>
+    </section>
   );
 };
 

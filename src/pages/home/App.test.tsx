@@ -1,11 +1,11 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
+import { renderWithProviders } from "../../__tests__/test-utils";
+import * as api from "../../components/list/api";
 import App from "./App";
-import { renderWithProviders } from "./__tests__/test-utils";
-import * as api from "./components/list/api";
 
-vi.mock("./components/list/mock-data");
+vi.mock("../../components/list/api");
 
 describe("App Search + LocalStorage behavior", () => {
   beforeEach(() => {
@@ -97,33 +97,43 @@ describe("App Search + LocalStorage behavior", () => {
   });
 
   test("makes initial API call on mount", async () => {
-    const spy = vi.spyOn(api, "fetchPokemon").mockResolvedValue([]);
+    const spy = vi.spyOn(api, "fetchPokemonList").mockResolvedValue({
+      data: [],
+      totalPages: 1,
+    });
 
-    render(<App />);
+    vi.spyOn(Storage.prototype, "getItem").mockReturnValue(null);
+
+    renderWithProviders(<App />);
 
     await waitFor(() => {
-      expect(spy).toHaveBeenCalledWith("");
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ query: "" }));
     });
   });
 
   test("uses search term from localStorage on initial load", async () => {
-    vi.spyOn(Storage.prototype, "getItem").mockReturnValue("pikachu");
+    localStorage.setItem("search_term", "pikachu");
 
-    const spy = vi.spyOn(api, "fetchPokemon").mockResolvedValue([]);
+    const spy = vi.spyOn(api, "fetchPokemonList").mockResolvedValue({
+      data: [],
+      totalPages: 1,
+    });
 
-    render(<App />);
+    renderWithProviders(<App />);
 
     await waitFor(() => {
-      expect(spy).toHaveBeenCalledWith("pikachu");
+      expect(spy).toHaveBeenCalledWith(
+        expect.objectContaining({ query: "pikachu" }),
+      );
     });
   });
 
   test("shows loading state during API call", async () => {
-    vi.spyOn(api, "fetchPokemon").mockImplementation(
-      () => new Promise(() => {}), // never resolves
+    vi.spyOn(api, "fetchPokemonList").mockImplementation(
+      () => new Promise(() => {}),
     );
 
-    render(<App />);
+    renderWithProviders(<App />);
 
     const loader = await screen.findByRole("status", {
       hidden: true,

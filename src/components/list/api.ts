@@ -1,16 +1,20 @@
 const BASE_URL = "https://pokeapi.co/api/v2";
+const PAGE_SIZE = 20;
 
 export type ApiError = {
   status: number;
   message: string;
 };
 
-export type PokemonCard = {
+export type PokemonListCard = {
   id: number;
   name: string;
   image: string;
-  height: number;
-  weight: number;
+};
+
+export type PokemonListResult = {
+  data: PokemonListCard[];
+  totalPages: number;
 };
 
 type PokemonListItem = {
@@ -19,58 +23,75 @@ type PokemonListItem = {
 };
 
 type PokemonListResponse = {
+  count: number;
   results: PokemonListItem[];
 };
 
-export async function fetchPokemon(query?: string): Promise<PokemonCard[]> {
+type FetchPokemonParams = {
+  page?: number;
+  query?: string;
+};
+
+function extractId(url: string): number {
+  return Number(url.split("/").filter(Boolean).pop());
+}
+
+function spriteFromId(id: number): string {
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+}
+
+export async function fetchPokemonList({
+  page = 1,
+  query,
+}: FetchPokemonParams): Promise<PokemonListResult> {
   if (query) {
     const res = await fetch(`${BASE_URL}/pokemon/${query.toLowerCase()}`);
 
     if (!res.ok) {
-      throw {
-        status: res.status,
-        message: "Failed to fetch pokemon",
-      } as ApiError;
+      return { data: [], totalPages: 1 };
     }
 
-    const data = await res.json();
+    const pokemon = await res.json();
 
-    return [
-      {
-        id: data.id,
-        name: data.name,
-        image: data.sprites.front_default,
-        height: data.height,
-        weight: data.weight,
-      },
-    ];
+    return {
+      data: [
+        {
+          id: pokemon.id,
+          name: pokemon.name,
+          image: spriteFromId(pokemon.id),
+        },
+      ],
+      totalPages: 1,
+    };
   }
 
-  const res = await fetch(`${BASE_URL}/pokemon?limit=20`);
+  const offset = (page - 1) * PAGE_SIZE;
+
+  const res = await fetch(
+    `${BASE_URL}/pokemon?limit=${PAGE_SIZE}&offset=${offset}`,
+  );
 
   if (!res.ok) {
     throw {
       status: res.status,
-      message: "Failed to fetch pokemon",
+      message: "Failed to fetch pokemon list",
     } as ApiError;
   }
 
   const list: PokemonListResponse = await res.json();
 
-  const detailed = await Promise.all(
-    list.results.map(async (p: PokemonListItem) => {
-      const res = await fetch(p.url);
-      const data = await res.json();
+  const data: PokemonListCard[] = list.results.map((p) => {
+    const id = extractId(p.url);
 
-      return {
-        id: data.id,
-        name: data.name,
-        image: data.sprites.front_default,
-        height: data.height,
-        weight: data.weight,
-      };
-    }),
-  );
+    return {
+      id,
+      name: p.name,
+      image: spriteFromId(id),
+    };
+  });
 
-  return detailed;
+  return {
+    data,
+    totalPages: Math.ceil(list.count / PAGE_SIZE),
+  };
 }

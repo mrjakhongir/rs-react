@@ -1,8 +1,12 @@
 import { render } from "@testing-library/react";
 import type { ReactElement } from "react";
+import { MemoryRouter } from "react-router-dom";
 
-export function renderWithProviders(ui: ReactElement) {
-  return render(ui);
-}
-
-// Later we can add Router, Context, QueryClient here without touching tests.
+export const renderWithProviders = (
+  ui: ReactElement,
+  { initialEntries = ["/"] }: { initialEntries?: string[] } = {},
+) => {
+  return render(
+    <MemoryRouter initialEntries={initialEntries}>{ui}</MemoryRouter>,
+  );
+};

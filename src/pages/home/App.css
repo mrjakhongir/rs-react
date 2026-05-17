@@ -1,0 +1,14 @@
+.app {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  display: flex;
+}
+
+.details {
+  flex: 1;
+}
