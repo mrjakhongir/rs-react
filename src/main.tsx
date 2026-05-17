@@ -7,6 +7,7 @@ import "./index.css";
 import AboutPage from "./pages/about/about-page";
 import DetailsPage from "./pages/details/details-page";
 import App from "./pages/home/App";
+import NotFoundPage from "./pages/not-found/not-found-page";
 
 const router = createBrowserRouter([
   {
@@ -20,7 +21,7 @@ const router = createBrowserRouter([
     ],
   },
   { path: "/about", element: <AboutPage /> },
-  { path: "*", element: <div>404</div> },
+  { path: "*", element: <NotFoundPage /> },
 ]);
 
 createRoot(document.getElementById("root")!).render(
