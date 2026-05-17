@@ -75,17 +75,17 @@ const List: React.FC<Props> = ({ value }) => {
       {state.loading && <Loading loading={state.loading} />}
       {!state.loading && <NetworkError error={state.error} />}
 
-      <Pagination
-        currentPage={+currentPage}
-        totalPages={state.totalPages}
-        onPageChange={handlePageChange}
-      />
-
       <div className="list">
         {state.data?.map((p) => (
           <Card key={p.name} pokemon={p} />
         ))}
       </div>
+
+      <Pagination
+        currentPage={+currentPage}
+        totalPages={state.totalPages}
+        onPageChange={handlePageChange}
+      />
     </section>
   );
 };

@@ -15,6 +15,7 @@ const Card: React.FC<Props> = ({ pokemon }) => {
     if (detailsId && +detailsId === id) return;
     navigate(`/details/${id}${location.search}`);
   };
+  
 
   return (
     <div

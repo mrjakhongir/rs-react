@@ -1,4 +1,4 @@
-import './pagination.css';
+import "./pagination.css";
 
 type Props = {
   currentPage: number;
