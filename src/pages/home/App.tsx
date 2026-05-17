@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Outlet, useParams } from "react-router-dom";
-import ErrorTestButton from "../../components/error-boundary/error-test-button";
 import Header from "../../components/header/header";
 import List from "../../components/list/list";
 import "./App.css";
@@ -42,8 +41,6 @@ const App = () => {
 
         <section className="details">{detailsId && <Outlet />}</section>
       </main>
-
-      
     </div>
   );
 };

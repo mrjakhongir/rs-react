@@ -2,7 +2,7 @@ const BASE_URL = "https://pokeapi.co/api/v2";
 const PAGE_SIZE = 10;
 
 export type ApiError = {
-  status: number;
+  status?: number;
   message: string;
 };
 
