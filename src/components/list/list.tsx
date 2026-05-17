@@ -15,10 +15,7 @@ type State = {
   data: PokemonListCard[];
   loading: boolean;
   totalPages: number;
-  error: {
-    status?: number;
-    message: string;
-  } | null;
+  error: ApiError | null;
 };
 
 const initialState = {
@@ -35,7 +32,7 @@ const List: React.FC<Props> = ({ value }) => {
 
   useEffect(() => {
     const loadData = async () => {
-      setState((s) => ({ ...s, loading: true, error: null }));
+      setState({ ...initialState, loading: true, error: null });
 
       try {
         const result = await fetchPokemonList({
@@ -51,7 +48,6 @@ const List: React.FC<Props> = ({ value }) => {
         }));
       } catch (e) {
         const err = e as ApiError;
-
         setState({
           ...initialState,
           error: {

@@ -48,9 +48,11 @@ export async function fetchPokemonList({
     const res = await fetch(`${BASE_URL}/pokemon/${query.toLowerCase()}`);
 
     if (!res.ok) {
-      return { data: [], totalPages: 1 };
+      throw {
+        status: res.status,
+        message: "Failed to fetch pokemon list",
+      } as ApiError;
     }
-
     const pokemon = await res.json();
 
     return {
