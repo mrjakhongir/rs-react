@@ -43,7 +43,7 @@ const App = () => {
         <section className="details">{detailsId && <Outlet />}</section>
       </main>
 
-      <ErrorTestButton />
+      
     </div>
   );
 };
