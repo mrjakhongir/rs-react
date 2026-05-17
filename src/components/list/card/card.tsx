@@ -15,14 +15,11 @@ const Card: React.FC<Props> = ({ pokemon }) => {
     if (detailsId && +detailsId === id) return;
     navigate(`/details/${id}${location.search}`);
   };
-  
 
   return (
     <div
-      onClick={() => {
-        openDetails(pokemon.id);
-      }}
-      className="card"
+      onClick={() => openDetails(pokemon.id)}
+      className={`card ${detailsId && pokemon.id === +detailsId ? "card--active" : ""}`}
     >
       <div>
         <div className="card__img_wrapper">

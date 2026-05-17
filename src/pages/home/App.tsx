@@ -39,7 +39,9 @@ const App = () => {
       <main className="main">
         <List value={appState.search} />
 
-        <section className="details">{detailsId && <Outlet />}</section>
+        <section className={detailsId && "details-page"}>
+          <Outlet />
+        </section>
       </main>
     </div>
   );
