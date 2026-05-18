@@ -46,8 +46,6 @@ describe("App Search + LocalStorage behavior", () => {
 
   // 5️⃣ Saves search term to localStorage when search button is clicked
   test("saves search term to localStorage when search button is clicked", async () => {
-    const setItemSpy = vi.spyOn(Storage.prototype, "setItem");
-
     renderWithProviders(<App />);
     const user = userEvent.setup();
 
@@ -57,13 +55,13 @@ describe("App Search + LocalStorage behavior", () => {
     await user.type(input, "charmander");
     await user.click(button);
 
-    expect(setItemSpy).toHaveBeenCalledWith("search_term", "charmander");
+    expect(localStorage.getItem("search_term")).toBe(
+      JSON.stringify("charmander"),
+    );
   });
 
   // 6️⃣ Trims whitespace before saving
   test("trims whitespace from search input before saving", async () => {
-    const setItemSpy = vi.spyOn(Storage.prototype, "setItem");
-
     renderWithProviders(<App />);
     const user = userEvent.setup();
 
@@ -73,13 +71,11 @@ describe("App Search + LocalStorage behavior", () => {
     await user.type(input, "   mewtwo   ");
     await user.click(button);
 
-    expect(setItemSpy).toHaveBeenCalledWith("search_term", "mewtwo");
+    expect(localStorage.getItem("search_term")).toBe(JSON.stringify("mewtwo"));
   });
 
   // 7️⃣ Overwrites existing localStorage value when new search is performed
   test("overwrites existing localStorage value when new search is performed", async () => {
-    const setItemSpy = vi.spyOn(Storage.prototype, "setItem");
-
     renderWithProviders(<App />);
     const user = userEvent.setup();
 
@@ -93,7 +89,7 @@ describe("App Search + LocalStorage behavior", () => {
     await user.type(input, "snorlax");
     await user.click(button);
 
-    expect(setItemSpy).toHaveBeenLastCalledWith("search_term", "snorlax");
+    expect(localStorage.getItem("search_term")).toBe(JSON.stringify("snorlax"));
   });
 
   test("makes initial API call on mount", async () => {
