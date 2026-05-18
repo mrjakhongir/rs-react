@@ -1,24 +1,37 @@
-import type { PokemonCard } from "../api";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import type { PokemonListCard } from "../api";
 import "./card.css";
 
 type Props = {
-  pokemon: PokemonCard;
+  pokemon: PokemonListCard;
 };
 
 const Card: React.FC<Props> = ({ pokemon }) => {
+  const { detailsId } = useParams<{ detailsId?: string }>();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const openDetails = (id: number) => {
+    if (detailsId && +detailsId === id) return;
+    navigate(`/details/${id}${location.search}`);
+  };
+
   return (
-    <div className="card">
-      <img
-        className="card__img"
-        src={pokemon.image || ""}
-        alt={pokemon.name || "unknown"}
-      />
-
-      <h3 className="card__title">{pokemon.name || "Unknown Pokémon"}</h3>
-
-      <p className="card__description">
-        Height: {pokemon.height ?? "N/A"} • Weight: {pokemon.weight ?? "N/A"}
-      </p>
+    <div
+      onClick={() => openDetails(pokemon.id)}
+      className={`card ${detailsId && pokemon.id === +detailsId ? "card--active" : ""}`}
+    >
+      <div>
+        <div className="card__img_wrapper">
+          <img
+            className="card__img"
+            src={pokemon.image || ""}
+            alt={pokemon.name || "unknown"}
+          />
+        </div>
+        <h3 className="card__title">{pokemon.name || "Unknown Pokémon"}</h3>
+      </div>
+      <span className="card__arrow">&gt;</span>
     </div>
   );
 };

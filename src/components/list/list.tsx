@@ -1,6 +1,7 @@
-import { Component } from "react";
-import Container from "../ui/container";
-import { fetchPokemon, type PokemonCard } from "./api";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import Pagination from "../pagination/pagination";
+import { fetchPokemonList, type ApiError, type PokemonListCard } from "./api";
 import Card from "./card/card";
 import "./list.css";
 import Loading from "./loading/loading";
@@ -11,75 +12,80 @@ type Props = {
 };
 
 type State = {
-  data: PokemonCard[];
+  data: PokemonListCard[];
   loading: boolean;
-  error: {
-    status?: number;
-    message: string;
-  } | null;
+  totalPages: number;
+  error: ApiError | null;
 };
 
-class List extends Component<Props, State> {
-  state: State = {
-    data: [],
-    loading: false,
-    error: null,
+const initialState = {
+  data: [],
+  loading: false,
+  totalPages: 1,
+  error: null,
+};
+
+const List: React.FC<Props> = ({ value }) => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentPage = searchParams.get("page") || "1";
+  const [state, setState] = useState<State>(initialState);
+
+  useEffect(() => {
+    const loadData = async () => {
+      setState({ ...initialState, loading: true, error: null });
+
+      try {
+        const result = await fetchPokemonList({
+          page: currentPage ? +currentPage : 1,
+          query: value,
+        });
+
+        setState((prev) => ({
+          ...prev,
+          data: result?.data,
+          totalPages: result?.totalPages,
+          loading: false,
+        }));
+      } catch (e) {
+        const err = e as ApiError;
+        setState({
+          ...initialState,
+          error: {
+            status: err.status,
+            message: err.message || "",
+          },
+        });
+      }
+    };
+
+    loadData();
+  }, [value, currentPage]);
+
+  const handlePageChange = (page: number) => {
+    if (currentPage && page === +currentPage) return;
+    setSearchParams({ page: page.toString() });
   };
 
-  componentDidMount() {
-    this.loadData();
-  }
+  return (
+    <section className="list-container">
+      {state.loading && <Loading loading={state.loading} />}
+      {!state.loading && <NetworkError error={state.error} />}
 
-  componentDidUpdate(prevProps: Props) {
-    if (prevProps.value !== this.props.value) {
-      this.loadData();
-    }
-  }
+      <div className="list">
+        {state.data?.map((p) => (
+          <Card key={p.name} pokemon={p} />
+        ))}
+      </div>
 
-  loadData = async () => {
-    const { value } = this.props;
-
-    this.setState({ loading: true, error: null, data: [] });
-
-    try {
-      const data = await fetchPokemon(value);
-
-      this.setState({
-        data,
-        loading: false,
-      });
-    } catch (e) {
-      const err = e as { status?: number; message?: string };
-
-      this.setState({
-        loading: false,
-        error: {
-          status: err.status,
-          message: err.message || "",
-        },
-      });
-    }
-  };
-
-  render() {
-    const { data, loading, error } = this.state;
-
-    return (
-      <main>
-        {loading && <Loading loading={loading} />}
-
-        {!loading && <NetworkError error={error} />}
-
-        <Container>
-          <div className="list">
-            {data.map((p) => (
-              <Card key={p.id} pokemon={p} />
-            ))}
-          </div>
-        </Container>
-      </main>
-    );
-  }
-}
+      {!state.loading && (
+        <Pagination
+          currentPage={+currentPage}
+          totalPages={state.totalPages}
+          onPageChange={handlePageChange}
+        />
+      )}
+    </section>
+  );
+};
 
 export default List;

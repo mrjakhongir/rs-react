@@ -1,0 +1,8 @@
+.main {
+  display: flex;
+}
+
+.details-page {
+  transition: all 0.2s ease-in-out;
+  flex: 1;
+}

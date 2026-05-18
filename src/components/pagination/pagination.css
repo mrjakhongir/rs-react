@@ -1,0 +1,32 @@
+.pagination {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1rem;
+}
+
+.pagination__btn,
+.pagination__number {
+  padding: 0.8rem 1.6rem;
+  font-size: 1.6rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.pagination__btn {
+  background: goldenrod;
+  color: white;
+}
+
+.pagination__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination__number--active {
+  background: goldenrod;
+  color: white;
+}

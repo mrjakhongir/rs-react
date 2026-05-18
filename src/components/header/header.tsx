@@ -1,4 +1,4 @@
-import { Component } from "react";
+import { Link } from "react-router-dom";
 import Container from "../ui/container";
 import "./header.css";
 import Search from "./search/search";
@@ -9,22 +9,26 @@ type Props = {
   onSearch: () => void;
 };
 
-class Header extends Component<Props> {
-  render() {
-    const { value, onChange, onSearch } = this.props;
+const Header: React.FC<Props> = (props) => {
+  const { value, onChange, onSearch } = props;
 
-    return (
-      <header className="header">
-        <Container>
-          <div className="header__inner">
+  return (
+    <header className="header">
+      <Container>
+        <div className="header__inner">
+          <div className="header__left">
             <h1 className="logo">POKEMONS</h1>
 
-            <Search value={value} onChange={onChange} onSearch={onSearch} />
+            <Link to="/about" className="header__link">
+              About
+            </Link>
           </div>
-        </Container>
-      </header>
-    );
-  }
-}
+
+          <Search value={value} onChange={onChange} onSearch={onSearch} />
+        </div>
+      </Container>
+    </header>
+  );
+};
 
 export default Header;

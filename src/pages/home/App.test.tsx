@@ -1,11 +1,11 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
+import { renderWithProviders } from "../../__tests__/test-utils";
+import * as api from "../../components/list/api";
 import App from "./App";
-import { renderWithProviders } from "./__tests__/test-utils";
-import * as api from "./components/list/api";
 
-vi.mock("./components/list/mock-data");
+vi.mock("../../components/list/api");
 
 describe("App Search + LocalStorage behavior", () => {
   beforeEach(() => {
@@ -46,8 +46,6 @@ describe("App Search + LocalStorage behavior", () => {
 
   // 5️⃣ Saves search term to localStorage when search button is clicked
   test("saves search term to localStorage when search button is clicked", async () => {
-    const setItemSpy = vi.spyOn(Storage.prototype, "setItem");
-
     renderWithProviders(<App />);
     const user = userEvent.setup();
 
@@ -57,13 +55,13 @@ describe("App Search + LocalStorage behavior", () => {
     await user.type(input, "charmander");
     await user.click(button);
 
-    expect(setItemSpy).toHaveBeenCalledWith("search_term", "charmander");
+    expect(localStorage.getItem("search_term")).toBe(
+      JSON.stringify("charmander"),
+    );
   });
 
   // 6️⃣ Trims whitespace before saving
   test("trims whitespace from search input before saving", async () => {
-    const setItemSpy = vi.spyOn(Storage.prototype, "setItem");
-
     renderWithProviders(<App />);
     const user = userEvent.setup();
 
@@ -73,13 +71,11 @@ describe("App Search + LocalStorage behavior", () => {
     await user.type(input, "   mewtwo   ");
     await user.click(button);
 
-    expect(setItemSpy).toHaveBeenCalledWith("search_term", "mewtwo");
+    expect(localStorage.getItem("search_term")).toBe(JSON.stringify("mewtwo"));
   });
 
   // 7️⃣ Overwrites existing localStorage value when new search is performed
   test("overwrites existing localStorage value when new search is performed", async () => {
-    const setItemSpy = vi.spyOn(Storage.prototype, "setItem");
-
     renderWithProviders(<App />);
     const user = userEvent.setup();
 
@@ -93,37 +89,47 @@ describe("App Search + LocalStorage behavior", () => {
     await user.type(input, "snorlax");
     await user.click(button);
 
-    expect(setItemSpy).toHaveBeenLastCalledWith("search_term", "snorlax");
+    expect(localStorage.getItem("search_term")).toBe(JSON.stringify("snorlax"));
   });
 
   test("makes initial API call on mount", async () => {
-    const spy = vi.spyOn(api, "fetchPokemon").mockResolvedValue([]);
+    const spy = vi.spyOn(api, "fetchPokemonList").mockResolvedValue({
+      data: [],
+      totalPages: 1,
+    });
 
-    render(<App />);
+    vi.spyOn(Storage.prototype, "getItem").mockReturnValue(null);
+
+    renderWithProviders(<App />);
 
     await waitFor(() => {
-      expect(spy).toHaveBeenCalledWith("");
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ query: "" }));
     });
   });
 
   test("uses search term from localStorage on initial load", async () => {
-    vi.spyOn(Storage.prototype, "getItem").mockReturnValue("pikachu");
+    localStorage.setItem("search_term", "pikachu");
 
-    const spy = vi.spyOn(api, "fetchPokemon").mockResolvedValue([]);
+    const spy = vi.spyOn(api, "fetchPokemonList").mockResolvedValue({
+      data: [],
+      totalPages: 1,
+    });
 
-    render(<App />);
+    renderWithProviders(<App />);
 
     await waitFor(() => {
-      expect(spy).toHaveBeenCalledWith("pikachu");
+      expect(spy).toHaveBeenCalledWith(
+        expect.objectContaining({ query: "pikachu" }),
+      );
     });
   });
 
   test("shows loading state during API call", async () => {
-    vi.spyOn(api, "fetchPokemon").mockImplementation(
-      () => new Promise(() => {}), // never resolves
+    vi.spyOn(api, "fetchPokemonList").mockImplementation(
+      () => new Promise(() => {}),
     );
 
-    render(<App />);
+    renderWithProviders(<App />);
 
     const loader = await screen.findByRole("status", {
       hidden: true,
